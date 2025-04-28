@@ -125,7 +125,6 @@ public class AppointmentApiTests {
         }
     }
 
-    /* uncomment to activate tests...
     @Test
     @Order(4)
     public void testGetOneAppointment() {
@@ -268,6 +267,7 @@ public class AppointmentApiTests {
             Assertions.fail("Delete all appointments failed, error = " + e.getStatusCode());
         }
     }
+    /* uncomment to activate tests...
 
     // Question 3 : updated API **********************************************
     // Uncomment instantiation of doctors in LoadDatabase class.
