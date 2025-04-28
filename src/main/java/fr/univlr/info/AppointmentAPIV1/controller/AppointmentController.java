@@ -1,7 +1,10 @@
 package fr.univlr.info.AppointmentAPIV1.controller;
 
 import fr.univlr.info.AppointmentAPIV1.model.Appointment;
+import fr.univlr.info.AppointmentAPIV1.model.Doctor;
+
 import fr.univlr.info.AppointmentAPIV1.store.AppointmentRepository;
+import fr.univlr.info.AppointmentAPIV1.store.DoctorRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +29,11 @@ import java.util.Optional;
 @RequestMapping(path = "/api")
 public class AppointmentController {
     private final AppointmentRepository apptRepository;
+    private final DoctorRepository doctorRepository;
 
-    public AppointmentController(AppointmentRepository apptRepository) {
+    public AppointmentController(AppointmentRepository apptRepository, DoctorRepository doctorRepository) {
         this.apptRepository = apptRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     // Récupère tous les rendez-vous
@@ -40,18 +46,38 @@ public class AppointmentController {
     // Ajoute un nouveau rendez-vous
     @PostMapping("/appointments")
     ResponseEntity<Appointment> newAppointment(@Valid @RequestBody Appointment appt) {
+        // Recherche du médecin par son nom
+        Doctor doctor = doctorRepository.findByName(appt.getDoctor());
+        if (doctor == null) {
+            throw new DoctorNotFoundException(appt.getDoctor());
+        }
+
+        // Vérifie s'il y a des rendez-vous qui se chevauchent
+        List<Appointment> overlappingAppts = apptRepository.findOverlappingAppointments(
+                appt.getDoctor(), appt.getStartDate(), appt.getEndDate());
+
+        // S'il y a des rendez-vous qui se chevauchent, lance une exception
+        if (!overlappingAppts.isEmpty()) {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+            throw new AppointmentConflictException(
+                    appt.getDoctor(),
+                    df.format(appt.getStartDate()),
+                    df.format(appt.getEndDate()));
+        }
+
+        // Association du médecin au rendez-vous
+        appt.setDoctorObj(doctor);
+
         // Sauvegarde le rendez-vous dans la base de données
         Appointment savedAppt = apptRepository.save(appt);
 
-        // Crée l'URI du rendez-vous créé en utilisant ServletUriComponentsBuilder
-        // Cette méthode crée une URI absolue basée sur la requête actuelle
+        // Création de l'URI pour la ressource
         URI location = ServletUriComponentsBuilder
-                .fromCurrentRequestUri() // Utilise l'URI de la requête actuelle
-                .path("/{id}")          // Ajoute le chemin avec l'ID
-                .buildAndExpand(savedAppt.getId()) // Remplace {id} par l'ID réel
-                .toUri();              // Convertit en URI
+                .fromCurrentRequestUri()
+                .path("/{id}")
+                .buildAndExpand(savedAppt.getId())
+                .toUri();
 
-        // Retourne une réponse avec le statut CREATED et l'emplacement du rendez-vous créé
         return ResponseEntity.created(location).body(savedAppt);
     }
 
@@ -70,11 +96,17 @@ public class AppointmentController {
     // Met à jour un rendez-vous existant
     @PutMapping("/appointments/{id}")
     ResponseEntity<Appointment> replaceAppointment(@PathVariable Long id, @Valid @RequestBody Appointment newAppt) {
-        // Recherche le rendez-vous dans la base de données
+        // Recherche du médecin par son nom
+        Doctor doctor = doctorRepository.findByName(newAppt.getDoctor());
+        if (doctor == null) {
+            throw new DoctorNotFoundException(newAppt.getDoctor());
+        }
+
         return apptRepository.findById(id)
                 .map(appointment -> {
-                    // Copie les propriétés du nouveau rendez-vous vers l'ancien, en ignorant l'ID
+                    // Copie les propriétés du nouveau rendez-vous vers l'ancien
                     appointment.setDoctor(newAppt.getDoctor());
+                    appointment.setDoctorObj(doctor);
                     appointment.setStartDate(newAppt.getStartDate());
                     appointment.setEndDate(newAppt.getEndDate());
                     appointment.setPatient(newAppt.getPatient());

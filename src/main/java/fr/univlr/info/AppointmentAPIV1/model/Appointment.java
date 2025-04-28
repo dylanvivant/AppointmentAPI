@@ -1,10 +1,12 @@
 package fr.univlr.info.AppointmentAPIV1.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.univlr.info.AppointmentAPIV1.controller.AppointmentDateConstraint;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
@@ -15,10 +17,16 @@ public class Appointment {
     @Id
     @GeneratedValue
     private Long id;
+
+    @JsonIgnore
+    @ManyToOne
+    private Doctor doctorObj;
+
     private String doctor;
     private Date startDate, endDate;
     private String patient;
 
+    // Constructeurs existants
     public Appointment() {
     }
 
@@ -29,6 +37,7 @@ public class Appointment {
         this.patient = patient;
     }
 
+    // Getters & Setters existants
     public Long getId() {
         return id;
     }
@@ -67,6 +76,15 @@ public class Appointment {
 
     public void setPatient(String patient) {
         this.patient = patient;
+    }
+
+    // Nouveaux getters & setters pour doctorObj
+    public Doctor getDoctorObj() {
+        return doctorObj;
+    }
+
+    public void setDoctorObj(Doctor doctorObj) {
+        this.doctorObj = doctorObj;
     }
 
     @Override

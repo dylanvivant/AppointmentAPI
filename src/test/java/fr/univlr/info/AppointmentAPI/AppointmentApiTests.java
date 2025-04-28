@@ -2,6 +2,7 @@ package fr.univlr.info.AppointmentAPI;
 
 import fr.univlr.info.AppointmentAPIV1.AppointmentApiApplication;
 import fr.univlr.info.AppointmentAPIV1.model.Appointment;
+import fr.univlr.info.AppointmentAPIV1.model.Doctor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -267,7 +268,6 @@ public class AppointmentApiTests {
             Assertions.fail("Delete all appointments failed, error = " + e.getStatusCode());
         }
     }
-    /* uncomment to activate tests...
 
     // Question 3 : updated API **********************************************
     // Uncomment instantiation of doctors in LoadDatabase class.
@@ -369,6 +369,7 @@ public class AppointmentApiTests {
             assertSame(e.getStatusCode(),HttpStatus.NOT_FOUND);
         }
     }
+    /* uncomment to activate tests...
 
     // Question 4 : templated request ****************************************
 

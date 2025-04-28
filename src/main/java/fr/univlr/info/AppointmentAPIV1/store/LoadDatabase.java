@@ -1,6 +1,7 @@
 package fr.univlr.info.AppointmentAPIV1.store;
 
 import fr.univlr.info.AppointmentAPIV1.model.Appointment;
+import fr.univlr.info.AppointmentAPIV1.model.Doctor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -30,18 +31,18 @@ class LoadDatabase {
     }
 
     @Bean
-    CommandLineRunner initDatabase(AppointmentRepository appointmentRepository/*,
-                                   DoctorRepository docRepository*/) {
+    CommandLineRunner initDatabase(AppointmentRepository appointmentRepository,
+                                   DoctorRepository docRepository) {
         return args -> {
             // V2 version : doctors mjones and jsmith must exist
-            /*
+
               Doctor mjones = docRepository.save(new Doctor("mjones"));
               Doctor jsmith = docRepository.save(new Doctor("jsmith"));
               Doctor jdoe = docRepository.save(new Doctor("jdoe"));
-            */
+
 
             // uncomment to populate the database
-            /*  
+            /*
             Appointment appt1 = new Appointment("mjones",
                     parseDate("2021-01-13T9:30"), parseDate("2021-01-13T10:15"), "jdoe");
             appointmentRepository.save(appt1);
